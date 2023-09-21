@@ -13,6 +13,7 @@ const Gameboard = (function() {
     }
    } 
 
+   //Update board with mark made on display
    const updateGameboard = function (square, weapon) {
     const [row, col] = square.id.match(/\d+/g).map(Number);
     board[row][col] = weapon;
@@ -23,12 +24,11 @@ const Gameboard = (function() {
 // console.log(board);
     return {
       board,
-      updateGameboard
+      updateGameboard,
+      createBoard
     }
 
 })();
-
-
 
 
 //Player Object 
@@ -47,10 +47,7 @@ const DisplayController = (function() {
     const grid = document.querySelector('.gameboard');
     const rows = 3;
     const columns = 3;
-   
-
-   
-  
+    const winnerDisplay = document.querySelector('.winner-display');
 
     //Creates grid cells adds to display
     const createGrid = () => {
@@ -82,7 +79,6 @@ const DisplayController = (function() {
     }
 
     //allow players to add marks to a specific spot on the board
-
     renderBoard(Gameboard.board);
 
     const squares = document.querySelectorAll('.square');
@@ -96,25 +92,33 @@ const DisplayController = (function() {
         })
     })
 
+   
+
+    //Clear all marks from the display
+    const clearDisplay = function () {
+        squares.forEach(square => {
+            square.innerHTML = '';
+        })
+
+        winnerDisplay.innerHTML = '';
+    }
+
+
 
     //Display game winner 
-    const displayWinner = (weapon) => {
-        console.log('won');
-        if (weapon == 'X') {
-            alert(`${Game.player1.player} wins!`)
-        } else {
-            alert(`${Game.player2.player} wins!`)
-        }
+    const displayWinner = (winner) => {
+        winnerDisplay.innerHTML = winner.player;
+        
     }
 
     //Display Tie
     const displayTie = () => {
-        alert('Tie Game');
+        winnerDisplay.innerHTML = winner.player;
     }
 
     return {
 
-        displayWinner, displayTie
+        displayWinner, displayTie, clearDisplay
 
     }
 
@@ -125,81 +129,106 @@ const DisplayController = (function() {
 // Game Flow
 const Game = (function() {
 
-    let turn = 1; 
+    let turn = 1;
+    let winner; 
+    let board = Gameboard.board;
     const player1 = createPlayer('p1', 'X');
     const player2 = createPlayer('p2', 'O');
-
+    
+    //If turn is odd, next mark is made by player one
     const playRound = function (square) {
-        if (turn % 2 != 0) {
-            square.innerHTML = player1.weapon;
-            Gameboard.updateGameboard(square, player1.weapon);
-            isGameOver(Gameboard.board);
-        } else {
-            square.innerHTML = player2.weapon;
-            Gameboard.updateGameboard(square, player2.weapon);
-            isGameOver(Gameboard.board);
-        }
 
-        turn++;
+        if (turn < 9) {
+            if (turn % 2 != 0) {
+                square.innerHTML = player1.weapon;
+                Gameboard.updateGameboard(square, player1.weapon);
+                isGameOver(board);
+            } else if (turn % 2 == 0) {
+                square.innerHTML = player2.weapon;
+                Gameboard.updateGameboard(square, player2.weapon);
+                isGameOver(board);
+            }   
+            turn++;
+
+        } 
 
     }
 
     const isGameOver = (board) => {
 
-        console.log(board);
-
         //Check top row
         if (board[0][0] == board[0][1] && board[0][0] == board[0][2] && board[0][0] != 0) {
-            DisplayController.displayWinner(board[0][0]);
+            findWinner(board[0][0]);
         }
 
          //Check middle row
          if (board[1][0] == board[1][1] && board[1][0] == board[1][2] && board[1][0] != 0) {
-            DisplayController.displayWinner(board[1][0]);
+            findWinner(board[1][0]);
         }
 
           //Check bottom row
           if (board[2][0] == board[2][1] && board[2][0] == board[2][2] && board[2][0] != 0) {
-            DisplayController.displayWinner(board[2][0]);
+            findWinner(board[2][0]);
         }
 
          //Check diagonal 
          if (board[0][0] == board[1][1] && board[0][0] == board[0][0] && board[2][2] != 0) {
-            DisplayController.displayWinner(board[0][0]);
+            findWinner(board[0][0]);
         }
 
         //Check diagonal 
         if (board[2][0] == board[1][1] && board[2][0] == board[0][2] && board[2][0] != 0) {
-            DisplayController.displayWinner(board[2][0]);
+            findWinner(board[2][0]);
         }
 
          //Check leftmost column
          if (board[0][0] == board[1][0] && board[0][0] == board[2][0] && board[0][0] != 0) {
-            DisplayController.displayWinner(board[0][0]);
+            findWinner(board[0][0]);
         }
 
         //Check middle column
         if (board[0][1] == board[1][1] && board[0][1] == board[2][1] && board[0][1] != 0) {
-            DisplayController.displayWinner(board[0][1]);
+            findWinner(board[0][1]);
         }
 
         //Check rightmost column
         if (board[0][2] == board[1][2] && board[0][2] == board[2][2] && board[0][2] != 0) {
-            DisplayController.displayWinner(board[0][2]);
+            findWinner(board[0][2]);
         }
 
         //Check for tie
-        if (turn == 9){
+        if (turn == 9 && !winner){
             DisplayController.displayTie();
         }
 
     }
 
+    //Use weapon from winning pattern to find winning player
+    const findWinner = (weapon) => {
+        if (weapon == 'X') {
+            winner = player1;
+        } else if (weapon == "O") {
+            winner = player2;
+        }
+
+        DisplayController.displayWinner(winner);
+    }
+
+    //Clear the board, reset variables, and clear display
+    const resetGame = () => {
+        Gameboard.createBoard();
+        winner = null;
+        turn = 1;
+        DisplayController.clearDisplay();
+    }
+
+    document.querySelector('.reset-btn').addEventListener('click', resetGame)
+
 
 
 
     return {
-        playRound, player1, player2
+        playRound, player1, player2, winner, resetGame
     }
 
 })();
