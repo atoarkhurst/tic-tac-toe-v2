@@ -163,52 +163,42 @@ const Game = (function() {
         } 
     }
 
+    const checkLine = (a, b, c) => {
+        return ( a== b ) && (b == c) && (a != 0);
+    }
+
     const isGameOver = (board) => {
 
-        //Check top row
-        if (board[0][0] == board[0][1] && board[0][0] == board[0][2] && board[0][0] != 0) {
-            findWinner(board[0][0]);
+        //Check Rows
+        for (i = 0; i < 3; i++) {
+            if (checkLine(board[i][0], board[i][1], board[i][2])) {
+                return findWinner(board[i][0]);
+            }
         }
 
-         //Check middle row
-         if (board[1][0] == board[1][1] && board[1][0] == board[1][2] && board[1][0] != 0) {
-            findWinner(board[1][0]);
+        //Check Columns
+        for (i = 0; i < 3; i++) {
+            if (checkLine(board[0][i], board[1][i], board[2][i])) {
+                return findWinner(board[0][i]);
+            }
         }
 
-          //Check bottom row
-          if (board[2][0] == board[2][1] && board[2][0] == board[2][2] && board[2][0] != 0) {
-            findWinner(board[2][0]);
+            // Check Diagonals
+        if (checkLine(board[0][0], board[1][1], board[2][2]) || checkLine(board[0][2], board[1][1], board[2][0])) {
+            return findWinner(board[1][1]);
         }
 
-         //Check diagonal 
-         if (board[0][0] == board[1][1] && board[0][0] == board[2][2] && board[0][0] != 0) {
-            findWinner(board[0][0]);
+      // Check for Tie
+      for (let i = 0; i < 3; i++) {
+        for (let j = 0; j < 3; j++) {
+            if (board[i][j] == 0) {
+                return null;  // Game is not over yet
+            }
         }
-
-        //Check diagonal 
-        if (board[2][0] == board[1][1] && board[2][0] == board[0][2] && board[2][0] != 0) {
-            findWinner(board[2][0]);
-        }
-
-         //Check leftmost column
-         if (board[0][0] == board[1][0] && board[0][0] == board[2][0] && board[0][0] != 0) {
-            findWinner(board[0][0]);
-        }
-
-        //Check middle column
-        if (board[0][1] == board[1][1] && board[0][1] == board[2][1] && board[0][1] != 0) {
-            findWinner(board[0][1]);
-        }
-
-        //Check rightmost column
-        if (board[0][2] == board[1][2] && board[0][2] == board[2][2] && board[0][2] != 0) {
-            findWinner(board[0][2]);
-        }
-
-        //Check for tie
-        if (turn == 9 && !winner){
-            DisplayController.displayTie();
-        }
+    }
+    
+    // If the code reaches this point, it's a tie
+    DisplayController.displayTie();
 
     }
 
