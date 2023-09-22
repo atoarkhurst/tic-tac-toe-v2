@@ -1,8 +1,8 @@
 // Gameboard object 
 const Gameboard = (function() {
     let board = [];
-    let rows = 3;
-    let columns = 3;
+    const rows = 3;
+    const columns = 3;
 
    const createBoard = () => {
     for (let i =0; i < rows; i++) {
@@ -47,7 +47,7 @@ const DisplayController = (function() {
     const grid = document.querySelector('.gameboard');
     const rows = 3;
     const columns = 3;
-    const winnerDisplay = document.querySelector('.winner-display');
+    const eventDisplay = document.querySelector('.event-display');
 
     //Creates grid cells adds to display
     const createGrid = () => {
@@ -92,7 +92,11 @@ const DisplayController = (function() {
         })
     })
 
-   
+   //Display who's turn it is 
+   const displayTurn = (player) => {
+        eventDisplay.innerHTML = `${player}'s move`;
+
+   }
 
     //Clear all marks from the display
     const clearDisplay = function () {
@@ -100,25 +104,25 @@ const DisplayController = (function() {
             square.innerHTML = '';
         })
 
-        winnerDisplay.innerHTML = '';
+        eventDisplay.innerHTML = '';
     }
 
 
 
     //Display game winner 
     const displayWinner = (winner) => {
-        winnerDisplay.innerHTML = winner.player;
+        eventDisplay.innerHTML = `${winner.player} wins!`;
         
     }
 
     //Display Tie
     const displayTie = () => {
-        winnerDisplay.innerHTML = winner.player;
+        eventDisplay.innerHTML = "Tie Game"
     }
 
     return {
 
-        displayWinner, displayTie, clearDisplay
+        displayWinner, displayTie, clearDisplay, displayTurn
 
     }
 
@@ -132,26 +136,31 @@ const Game = (function() {
     let turn = 1;
     let winner; 
     let board = Gameboard.board;
-    const player1 = createPlayer('p1', 'X');
-    const player2 = createPlayer('p2', 'O');
+    const player1 = createPlayer('Player X', 'X');
+    const player2 = createPlayer('Player O', 'O');
     
     //If turn is odd, next mark is made by player one
     const playRound = function (square) {
 
-        if (turn < 9) {
+        if ( turn < 10 && !winner ) {
             if (turn % 2 != 0) {
+                DisplayController.displayTurn(player1.player);
                 square.innerHTML = player1.weapon;
                 Gameboard.updateGameboard(square, player1.weapon);
-                isGameOver(board);
+                if ( turn > 4) {
+                    isGameOver(board);
+                }
             } else if (turn % 2 == 0) {
+                DisplayController.displayTurn(player2.player);
                 square.innerHTML = player2.weapon;
                 Gameboard.updateGameboard(square, player2.weapon);
-                isGameOver(board);
+
+                if ( turn > 4) {
+                    isGameOver(board);
+                }
             }   
             turn++;
-
         } 
-
     }
 
     const isGameOver = (board) => {
@@ -172,7 +181,7 @@ const Game = (function() {
         }
 
          //Check diagonal 
-         if (board[0][0] == board[1][1] && board[0][0] == board[0][0] && board[2][2] != 0) {
+         if (board[0][0] == board[1][1] && board[0][0] == board[2][2] && board[0][0] != 0) {
             findWinner(board[0][0]);
         }
 
